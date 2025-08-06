@@ -1,8 +1,13 @@
 name: Build Docker Image
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_dispatch:
+    inputs:
+      variation:
+        description: 'Variation'
+        default: 'upgrade'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -21,6 +26,9 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - run: |
+        sed -i -e "s|VARIATION_NAME|${{ inputs.variation }}|g" Dockerfile
+
     - name: Build Images
       uses: docker/build-push-action@v6
       env:
@@ -30,4 +38,4 @@ jobs:
         file: Dockerfile
         platforms: linux/amd64,linux/arm64
         push: true
-        tags: ghcr.io/ietf-tools/upgrade-page:latest
+        tags: ghcr.io/ietf-tools/upgrade-page:${{ inputs.variation }}
